@@ -30,9 +30,9 @@ public class Game : PersistableObject
     List<Shape> shapes;
 
     public int levelCount=2;
+    public SpawnZone SpawnZoneOfLevel{get;set;}
 
-    [SerializeField]
-    SpawnZone spawnZone;
+    public static Game Instance{get;private set;}
 
     private void Update() {
         if(Input.GetKeyDown(createKey)){
@@ -70,6 +70,7 @@ public class Game : PersistableObject
     }
 
     private void Start() {
+        Instance=this;
         shapes=new List<Shape>();
         if(Application.isEditor){
             for(int i=0;i<SceneManager.sceneCount;++i){
@@ -94,7 +95,7 @@ public class Game : PersistableObject
     void CreateObject(){
         Shape o=shapeFactory.GetRandom();
         Transform t = o.transform;
-        t.localPosition=spawnZone.SpawnPoint;
+        t.localPosition=SpawnZoneOfLevel.SpawnPoint;
         t.localRotation=Random.rotation;
         t.localScale=Vector3.one*Random.Range(0.1f,1f);
         o.SetColor(Random.ColorHSV(
@@ -154,5 +155,9 @@ public class Game : PersistableObject
         SceneManager.SetActiveScene(SceneManager.GetSceneByBuildIndex(levelBuildIdx));
         loadLevelBuildIdx=levelBuildIdx;
         enabled=true;
+    }
+
+    private void OnEnable() {
+        Instance=this;
     }
 }
