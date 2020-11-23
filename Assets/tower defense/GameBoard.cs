@@ -18,6 +18,44 @@ public class GameBoard : MonoBehaviour
 
 	GameTileContentFactory contentFactory;
 
+	[SerializeField]
+	Texture2D gridTexture=default;
+	
+	bool showPaths,showGrid;
+
+	List<DefenseGameTile> spawnPoints=new List<DefenseGameTile>();
+
+	public bool ShowGrid{
+		get=>showGrid;
+		set{
+			showGrid=value;
+			Material material=ground.GetComponent<MeshRenderer>().material;
+			if(showGrid){
+				material.mainTexture=gridTexture;
+				material.SetTextureScale("_MainTex",size);
+			}else{
+				material.mainTexture=null;
+			}
+		}
+	}
+
+	public bool ShowPaths{
+		get=>showPaths;
+		set{
+			showPaths=value;
+			if(showPaths){
+				foreach(DefenseGameTile tile in tiles){
+					tile.ShowPath();
+				}
+			}
+			else{
+				foreach(DefenseGameTile tile in tiles){
+					tile.HidePath();
+				}
+			}
+		}
+	}
+
     public void Initialize(Vector2Int size,GameTileContentFactory contentFactory){
         this.size=size;
 		this.contentFactory=contentFactory;
@@ -49,6 +87,7 @@ public class GameBoard : MonoBehaviour
 			}
 		}
 		ToggleDestination(tiles[tiles.Length/2]);
+		ToggleSpawnPoint(tiles[0]);
     }
 
 	bool FindPaths(){
@@ -81,7 +120,14 @@ public class GameBoard : MonoBehaviour
 			}
 		}
 		foreach(DefenseGameTile t in tiles){
-			t.ShowPath();
+			if(!t.HasPath){
+				return false;
+			}
+		}
+		if(showPaths){
+			foreach(DefenseGameTile t in tiles){
+				t.ShowPath();
+			}
 		}
 		return true;
 	}
@@ -105,9 +151,43 @@ public class GameBoard : MonoBehaviour
 				FindPaths();
 			}
 		}
-		else{
+		else if(tile.Content.Type==GameTileContentType.Empty){
 			tile.Content=contentFactory.Get(GameTileContentType.Destination);
 			FindPaths();
 		}
 	}
+
+	public void ToggleWall(DefenseGameTile tile){
+		if(tile.Content.Type==GameTileContentType.Wall){
+			tile.Content=contentFactory.Get(GameTileContentType.Empty);
+			FindPaths();
+		}
+		else if (tile.Content.Type == GameTileContentType.Empty) {
+			tile.Content = contentFactory.Get(GameTileContentType.Wall);
+			if (!FindPaths()) {
+				tile.Content = contentFactory.Get(GameTileContentType.Empty);
+				FindPaths();
+			}
+		}
+	}
+
+	public void ToggleSpawnPoint(DefenseGameTile tile){
+		if(tile.Content.Type==GameTileContentType.SpawnPoint){
+			if(spawnPoints.Count>1){
+				spawnPoints.Remove(tile);
+				tile.Content=contentFactory.Get(GameTileContentType.Empty);
+			}
+			tile.Content=contentFactory.Get(GameTileContentType.Empty);
+		}
+		else if(tile.Content.Type==GameTileContentType.Empty){
+			tile.Content=contentFactory.Get(GameTileContentType.SpawnPoint);
+			spawnPoints.Add(tile);
+		}
+	}
+
+	public DefenseGameTile GetSpawnPoint(int idx){
+		return spawnPoints[idx];
+	}
+
+	public int SpawnPointCount=>spawnPoints.Count;
 }

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public enum GameTileContentType{
-    Empty,Destination
+    Empty,Destination,Wall,SpawnPoint
 }
 
 public class GameTileContent : MonoBehaviour

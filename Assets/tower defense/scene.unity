@@ -439,6 +439,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   boradSize: {x: 11, y: 11}
   board: {fileID: 2023193347}
+  enemyFactory: {fileID: 11400000, guid: 6637a87a108c7a34e8bc4af5e6f5b47c, type: 2}
+  spawnSpeed: 1
   tileContentFactory: {fileID: 11400000, guid: 6655d1c3e6dbbbe42b23ed6f5c1cc886, type: 2}
 --- !u!1 &2023193345
 GameObject:
@@ -486,3 +488,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ground: {fileID: 572995128}
   tilePrefab: {fileID: 5559867322819980926, guid: 8ade8f393dfc667439be0b05194d36fa, type: 3}
+  gridTexture: {fileID: 2800000, guid: 9471c1f9c41af2349a2899e74e458e8e, type: 3}

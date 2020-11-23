@@ -2,14 +2,15 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+
 public class DefenseGameTile : MonoBehaviour
 {
 	DefenseGameTile north,east,south,west,nextOnPath;
 
-    public DefenseGameTile GrowPathNorth()=>GrowPathTo(north);
-    public DefenseGameTile GrowPathEast()=>GrowPathTo(east);
-    public DefenseGameTile GrowPathSouth()=>GrowPathTo(south);
-    public DefenseGameTile GrowPathWest()=>GrowPathTo(west);
+    public DefenseGameTile GrowPathNorth()=>GrowPathTo(north,Direction.North);
+    public DefenseGameTile GrowPathEast()=>GrowPathTo(east,Direction.East);
+    public DefenseGameTile GrowPathSouth()=>GrowPathTo(south,Direction.South);
+    public DefenseGameTile GrowPathWest()=>GrowPathTo(west,Direction.West);
 
     public bool IsAlternative{get;set;}
 
@@ -27,6 +28,10 @@ public class DefenseGameTile : MonoBehaviour
     Transform arrow=default;
 
     public bool HasPath=>distance!=int.MaxValue;
+
+    public DefenseGameTile NextTileOnPath=>nextOnPath;
+
+    public Vector3 ExitPoint{get;private set;}
 
     public static void MakeEastWestNeightbors(DefenseGameTile east,DefenseGameTile west){
         Debug.Assert(
@@ -52,16 +57,21 @@ public class DefenseGameTile : MonoBehaviour
     public void BecomeDestination(){
         distance=0;
         nextOnPath=null;
+        ExitPoint=transform.localPosition;
     }
 
-    DefenseGameTile GrowPathTo(DefenseGameTile neighbor){
+    DefenseGameTile GrowPathTo(DefenseGameTile neighbor,Direction direction){
         Debug.Assert(HasPath,"No Path!");
         if(neighbor==null||neighbor.HasPath){
             return null;
         }
+        neighbor.PathDirection=direction;
         neighbor.distance=distance+1;
         neighbor.nextOnPath=this;
-        return neighbor;
+        // neighbor.ExitPoint=neighbor.transform.localPosition + direction.GetHalfVector();
+        neighbor.ExitPoint =
+			(neighbor.transform.localPosition + transform.localPosition) * 0.5f;
+        return neighbor.Content.Type!=GameTileContentType.Wall?neighbor:null;
     }
 
     public void ShowPath(){
@@ -88,4 +98,10 @@ public class DefenseGameTile : MonoBehaviour
             content.transform.localPosition=transform.localPosition;
         }
     }
+
+    public void HidePath(){
+        arrow.gameObject.SetActive(false);
+    }
+
+    public Direction PathDirection{get;private set;}
 }

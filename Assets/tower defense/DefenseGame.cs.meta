@@ -3,7 +3,10 @@ guid: ccdf23b0dd9a7224f8a5b2beb89f0ebd
 MonoImporter:
   externalObjects: {}
   serializedVersion: 2
-  defaultReferences: []
+  defaultReferences:
+  - board: {instanceID: 0}
+  - enemyFactory: {fileID: 11400000, guid: 6637a87a108c7a34e8bc4af5e6f5b47c, type: 2}
+  - tileContentFactory: {fileID: 11400000, guid: 6655d1c3e6dbbbe42b23ed6f5c1cc886, type: 2}
   executionOrder: 0
   icon: {instanceID: 0}
   userData: 

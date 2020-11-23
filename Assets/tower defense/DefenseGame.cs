@@ -11,13 +11,24 @@ public class DefenseGame : MonoBehaviour
 
     [SerializeField]
     GameBoard board=default;
+    
+    [SerializeField]
+    EnemyFactory enemyFactory=default;
+
+    [SerializeField,Range(0.1f,10f)]
+    float spawnSpeed=1f;
 
     
 	[SerializeField]
 	GameTileContentFactory tileContentFactory=default;
 
+    EnemyCollections enemies=new EnemyCollections();
+
+    float spawnProgress;
+
     private void Awake() {
         board.Initialize(boradSize,tileContentFactory);
+        board.ShowGrid=true;
     }
 
     private void OnValidate() {
@@ -32,13 +43,45 @@ public class DefenseGame : MonoBehaviour
     private void Update() {
         if(Input.GetMouseButtonDown(0)){
             HandleTouch();
+        }else if(Input.GetMouseButtonDown(1)){
+            HandleAlternativeTouch();
+        }
+        if(Input.GetKeyDown(KeyCode.V)){
+            board.ShowPaths=!board.ShowPaths;
+        }
+        if(Input.GetKeyDown(KeyCode.G)){
+            board.ShowGrid=!board.ShowGrid;
+        }
+        spawnProgress+=spawnSpeed*Time.deltaTime;
+        while(spawnProgress>=1f){
+            spawnProgress-=1f;
+            SpawnEnemy();
+        }
+        enemies.GameUpdate();
+    }
+
+    void SpawnEnemy(){
+        DefenseGameTile spawnPoint=board.GetSpawnPoint(Random.Range(0,board.SpawnPointCount));
+        Enemy enemy=enemyFactory.Get();
+        enemy.SpawnOn(spawnPoint);
+        enemies.Add(enemy);
+    }
+
+    void HandleAlternativeTouch(){
+        DefenseGameTile tile=board.GetTile(TouchRay);
+        if(tile!=null){
+            if(Input.GetKey(KeyCode.LeftShift)){
+                board.ToggleDestination(tile);
+            }else{
+                board.ToggleSpawnPoint(tile);
+            }
         }
     }
 
     void HandleTouch(){
         DefenseGameTile tile=board.GetTile(TouchRay);
         if(tile!=null){
-            board.ToggleDestination(tile);
+            board.ToggleWall(tile);
         }
     }
 }
