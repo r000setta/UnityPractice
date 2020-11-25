@@ -4,6 +4,10 @@ using UnityEngine;
 
 public class TransformationGrid : MonoBehaviour
 {
+
+    Matrix4x4 transformation;
+    List<Transformation> transformations;
+
     public Transform prefab;
 
     public int gridResolution=10;
@@ -19,6 +23,7 @@ public class TransformationGrid : MonoBehaviour
                 }
             }
         }
+        transformations=new List<Transformation>();
     }
 
     Transform CreateGridPoint(int x,int y,int z){
@@ -39,4 +44,32 @@ public class TransformationGrid : MonoBehaviour
             z-(gridResolution-1)*0.5f
         );
     }
+
+    private void Update() {
+        UpdateTransformation();
+        GetComponents<Transformation>(transformations);
+        for(int i=0,z=0;z<gridResolution;++z){
+            for(int y=0;y<gridResolution;++y){
+                for(int x=0;x<gridResolution;++x,++i){
+                    grid[i].localPosition=TransformPoint(x,y,z);
+                }
+            }
+        }
+    }
+
+    void UpdateTransformation () {
+		GetComponents<Transformation>(transformations);
+		if (transformations.Count > 0) {
+			transformation = transformations[0].Matrix;
+			for (int i = 1; i < transformations.Count; i++) {
+				transformation = transformations[i].Matrix * transformation;
+			}
+		}
+	}
+
+    Vector3 TransformPoint(int x,int y,int z){
+        Vector3 coordinates=GetCoordinates(x,y,z);
+        return transformation.MultiplyPoint(coordinates);
+    }
+
 }
