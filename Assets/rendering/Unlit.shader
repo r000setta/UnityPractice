@@ -30,6 +30,7 @@
 
             #pragma multi_compile _ SHADOWS_SCREEN
             #pragma multi_compile _ VERTEXLIGHT_ON
+            #pragma multi_compile_fwdbase
             #pragma vertex vert
             #pragma fragment frag
 

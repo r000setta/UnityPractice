@@ -72,7 +72,7 @@ void ComputeVertexLightColor(inout v2f v){
     #endif
 }
 
-UnityIndirect CreateIndirectLight(v2f v){
+UnityIndirect CreateIndirectLight(v2f v,float3 viewDir){
     UnityIndirect indirectLight;
     indirectLight.diffuse=0;
     indirectLight.specular=0;
@@ -82,6 +82,10 @@ UnityIndirect CreateIndirectLight(v2f v){
     #endif
     #if defined(FORWARD_BASE_PASS)
         indirectLight.diffuse+=max(0,ShadeSH9(float4(v.normal,1)));
+        float3 reflectionDir=reflect(-viewDir,v.normal);
+        float roughness=1-_Smoothness;
+        float4 envSample = UNITY_SAMPLE_TEXCUBE_LOD(unity_SpecCube0,reflectionDir,roughness*UNITY_SPECCUBE_LOD_STEPS);
+        indirectLight.specular=DecodeHDR(envSample,unity_SpecCube0_HDR);
     #endif
     return indirectLight;
 }
@@ -112,24 +116,24 @@ void InitializeFragmentNormal(inout v2f v){
 }
 
 v2f vert(a2v a){
-    v2f o;
-    o.uv.xy=TRANSFORM_TEX(a.uv,_MainTex);
-    o.uv.zw=TRANSFORM_TEX(a.uv,_DetailTex);
-    o.pos=UnityObjectToClipPos(a.vertex);
-    o.normal=UnityObjectToWorldNormal(a.normal);
+    v2f v;
+    v.uv.xy=TRANSFORM_TEX(a.uv,_MainTex);
+    v.uv.zw=TRANSFORM_TEX(a.uv,_DetailTex);
+    v.pos=UnityObjectToClipPos(a.vertex);
+    v.normal=UnityObjectToWorldNormal(a.normal);
 
     #if defined(BINORMAL_PER_FRAGMENT)
-		o.tangent = float4(UnityObjectToWorldDir(a.tangent.xyz), a.tangent.w);
+		v.tangent = float4(UnityObjectToWorldDir(a.tangent.xyz), a.tangent.w);
 	#else
-		o.tangent = UnityObjectToWorldDir(a.tangent.xyz);
-		o.binormal = CreateBinormal(o.normal, o.tangent, a.tangent.w);
+		v.tangent = UnityObjectToWorldDir(a.tangent.xyz);
+		v.binormal = CreateBinormal(v.normal, v.tangent, a.tangent.w);
 	#endif
-    o.tangent=float4(UnityObjectToWorldDir(a.tangent.xyz),a.tangent.w);
-    o.worldPos=mul(unity_ObjectToWorld,a.vertex);
+    v.tangent=float4(UnityObjectToWorldDir(a.tangent.xyz),a.tangent.w);
+    v.worldPos=mul(unity_ObjectToWorld,a.vertex);
     
-    TRANSFER_SHADOW(o);
-    ComputeVertexLightColor(o);
-    return o;
+    TRANSFER_SHADOW(v);
+    ComputeVertexLightColor(v);
+    return v;
 }
 
 float4 frag(v2f v):SV_TARGET{
@@ -147,7 +151,7 @@ float4 frag(v2f v):SV_TARGET{
         albedo,specularTint,
         oneMinusReflectivity,_Smoothness,
         v.normal,viewDir,
-        CreateLight(v),CreateIndirectLight(v)
+        CreateLight(v),CreateIndirectLight(v,viewDir)
     );
 }
 
