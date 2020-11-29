@@ -63,6 +63,8 @@
 
 			#pragma multi_compile _ UNITY_HDR_ON
 
+			#pragma multi_compile_fog
+
 			#pragma vertex MyVertexProgram
 			#pragma fragment MyFragmentProgram
 
@@ -126,6 +128,8 @@
 			#pragma shader_feature _DETAIL_NORMAL_MAP
 
 			#pragma multi_compile_fwdadd_fullshadows
+
+			#pragma multi_compile_fog
 			
 			#pragma vertex MyVertexProgram
 			#pragma fragment MyFragmentProgram

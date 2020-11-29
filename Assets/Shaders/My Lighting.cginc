@@ -64,6 +64,13 @@ struct FragmentOutput{
 	#endif
 };
 
+float4 ApplyFog(float4 color,Interpolators i){
+	float viewDistance=length(_WorldSpaceCameraPos-i.worldPos);
+	UNITY_CALC_FOG_FACTOR_RAW(viewDistance);
+	color.rgb= lerp(unity_FogColor.rgb,color.rgb,saturate(unityFogFactor));
+	return color;
+}
+
 float GetDetailMask (Interpolators i) {
 	#if defined (_DETAIL_MASK)
 		return tex2D(_DetailMask, i.uv.xy).a;
@@ -325,7 +332,7 @@ FragmentOutput MyFragmentProgram (Interpolators i) {
 		output.gBuffer2=float4(i.normal*0.5+0.5,1);
 		output.gBuffer3=color;
 	#else
-		output.color=color;
+		output.color=ApplyFog(color,i);
 	#endif
 	return output;
 }
