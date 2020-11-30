@@ -6,6 +6,13 @@
 #include "UnityPBSLighting.cginc"
 #include "AutoLight.cginc"
 
+#if defined(FOG_LINEAR)||defined(FOG_EXP)||defined(FOG_EXP2)
+	#if !defined(FOG_DISTANCE)
+		#define FOG_DEPTH 1
+	#endif
+	#define FOG_ON 1
+#endif
+
 float4 _Tint;
 sampler2D _MainTex, _DetailTex, _DetailMask;
 float4 _MainTex_ST, _DetailTex_ST;
@@ -44,7 +51,11 @@ struct Interpolators {
 		float3 binormal : TEXCOORD3;
 	#endif
 
-	float3 worldPos : TEXCOORD4;
+	#if FOG_DEPTH
+		float4 worldPos : TEXCOORD4;
+	#else
+		float3 worldPos : TEXCOORD4;
+	#endif
 
 	SHADOW_COORDS(5)
 
@@ -65,9 +76,18 @@ struct FragmentOutput{
 };
 
 float4 ApplyFog(float4 color,Interpolators i){
-	float viewDistance=length(_WorldSpaceCameraPos-i.worldPos);
-	UNITY_CALC_FOG_FACTOR_RAW(viewDistance);
-	color.rgb= lerp(unity_FogColor.rgb,color.rgb,saturate(unityFogFactor));
+	#if defined(FOG_ON)
+		float viewDistance=length(_WorldSpaceCameraPos-i.worldPos.xyz);
+		#if FOG_DEPTH
+			viewDistance=UNITY_Z_0_FAR_FROM_CLIPSPACE(i.worldPos.w);
+		#endif
+		UNITY_CALC_FOG_FACTOR_RAW(viewDistance);
+		float4 fogColor = 0;
+		#if defined(FORWARD_BASE_PASS)
+			fogColor = unity_FogColor;
+		#endif
+		color= lerp(fogColor,color,saturate(unityFogFactor));
+	#endif
 	return color;
 }
 
@@ -169,7 +189,10 @@ float3 CreateBinormal (float3 normal, float3 tangent, float binormalSign) {
 Interpolators MyVertexProgram (VertexData v) {
 	Interpolators i;
 	i.pos = UnityObjectToClipPos(v.vertex);
-	i.worldPos = mul(unity_ObjectToWorld, v.vertex);
+	i.worldPos.xyz = mul(unity_ObjectToWorld, v.vertex);
+	#if FOG_DEPTH
+		i.worldPos.w=i.pos.z;
+	#endif
 	i.normal = UnityObjectToWorldNormal(v.normal);
 
 	#if defined(BINORMAL_PER_FRAGMENT)
