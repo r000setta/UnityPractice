@@ -1,4 +1,4 @@
-﻿Shader "Custom/My First Lighting Shader" {
+﻿Shader "Custom/Flat Wireframe" {
 
 	Properties {
 		_Color ("Tint", Color) = (1, 1, 1, 1)
@@ -30,6 +30,10 @@
 		[HideInInspector] _SrcBlend ("_SrcBlend", Float) = 1
 		[HideInInspector] _DstBlend ("_DstBlend", Float) = 0
 		[HideInInspector] _ZWrite ("_ZWrite", Float) = 1
+
+		_WireframeColor("Wireframe Color",Color)=(0,0,0)
+		_WireframeSmoothing("Wireframe Smoothing",Range(0,10))=1
+		_WireframeThickness("Wireframe Thickness",Range(0,10))=1
 	}
 
 	CGINCLUDE
@@ -58,7 +62,7 @@
 
 			CGPROGRAM
 
-			#pragma target 3.0
+			#pragma target 4.0
 
 			#pragma shader_feature _ _RENDERING_CUTOUT _RENDERING_FADE _RENDERING_TRANSPARENT
 			#pragma shader_feature _METALLIC_MAP
@@ -80,10 +84,11 @@
 
 			#pragma vertex MyVertexProgram
 			#pragma fragment MyFragmentProgram
+			#pragma geometry MyGeometryProgram
 
 			#define FORWARD_BASE_PASS
 
-			#include "./My Lighting.cginc"
+			#include "MyFlatWireframe.cginc"
 
 			ENDCG
 		}

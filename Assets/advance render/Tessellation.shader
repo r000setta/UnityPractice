@@ -1,4 +1,4 @@
-﻿Shader "Custom/My First Lighting Shader" {
+Shader "Custom/Tessellation" {
 
 	Properties {
 		_Color ("Tint", Color) = (1, 1, 1, 1)
@@ -30,6 +30,13 @@
 		[HideInInspector] _SrcBlend ("_SrcBlend", Float) = 1
 		[HideInInspector] _DstBlend ("_DstBlend", Float) = 0
 		[HideInInspector] _ZWrite ("_ZWrite", Float) = 1
+
+		_WireframeColor("Wireframe Color",Color)=(0,0,0)
+		_WireframeSmoothing("Wireframe Smoothing",Range(0,10))=1
+		_WireframeThickness("Wireframe Thickness",Range(0,10))=1
+
+		_TessellationUniform("Tessellation Uniform",Range(1,64))=1
+		_TessellationEdgeLength ("Tessellation Edge Length", Range(5, 100)) = 50
 	}
 
 	CGINCLUDE
@@ -58,7 +65,7 @@
 
 			CGPROGRAM
 
-			#pragma target 3.0
+			#pragma target 4.6
 
 			#pragma shader_feature _ _RENDERING_CUTOUT _RENDERING_FADE _RENDERING_TRANSPARENT
 			#pragma shader_feature _METALLIC_MAP
@@ -70,20 +77,25 @@
 			#pragma shader_feature _DETAIL_MASK
 			#pragma shader_feature _DETAIL_ALBEDO_MAP
 			#pragma shader_feature _DETAIL_NORMAL_MAP
+			#pragma shader_feature _TESSELLATION_EDGE
 
 			#pragma multi_compile _ LOD_FADE_CROSSFADE
 
 			#pragma multi_compile_fwdbase
 			#pragma multi_compile_fog
-			#pragma multi_compile_instancing
-			#pragma instancing_options lodfade force_same_maxcount_for_gl
+			// #pragma multi_compile_instancing
+			// #pragma instancing_options lodfade force_same_maxcount_for_gl
 
-			#pragma vertex MyVertexProgram
 			#pragma fragment MyFragmentProgram
+            #pragma hull MyHullProgram
+			#pragma geometry MyGeometryProgram
+            #pragma domain MyDomainProgram
+            #pragma vertex MyTessellationVertexProgram
 
 			#define FORWARD_BASE_PASS
 
-			#include "./My Lighting.cginc"
+			#include "MyFlatWireframe.cginc"
+            #include "MyTessellation.cginc"
 
 			ENDCG
 		}
